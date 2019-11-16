@@ -38,10 +38,5 @@ Payload.Blocks		Block[Payload.BlocksCount]
 
 ########## represent all decompressed Payload.Blocks in one stream
 DataStream
-	EntryInfoCount		Int32
-	EntryInfos			EntryInfo[EntryInfoCount]
-		Offset		Int64
-		Size		Int64
-		CabFile.Flags		Int32
-		CabFile.Name		str00
-		CabFile.Data		byte[EntryInfoSize] at Position = EntryInfoOffset
+	Files	File[EntryInfoCount]
+		File	EntryInfos[].Size with start on EntryInfos[].Offset
