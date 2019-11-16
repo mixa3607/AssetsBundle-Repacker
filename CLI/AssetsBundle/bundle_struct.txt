@@ -1,0 +1,73 @@
+﻿	HEADER
+str00	type name
+int32	format
+str00	engine version
+str00	player version
+
+	PAYLOAD
+int64	bundle size
+int32	compressed size
+int32	decompressed size
+int32	flags
+	0b0000_0000_0000_0000_0000_0000_1000_0000	read at end of file
+	0b0000_0000_0000_0000_0000_0000_0011_1111	compression type
+
+byte[compressed size]	compressed info block
+	- byte[16]	unknown (all is 00)
+	- int32		blocks count
+	- repeat [blocks count] times
+	  {
+		int32	decompressed size
+		int32	compressed size
+		int16	flags
+				0b0000_0000_0000_0000_0000_0000_0011_1111	compression type
+	   }
+	- int32		entry info blocks count
+	- repeat [entry info blocks count]
+	  {
+		int64	entry info offset
+		int64	entry info size
+		int32	flags
+		str00	filename
+	   }
+
+repeat [blocks count] times{
+	byte[compressed size]	compressed data block
+}
+
+
+
+compression types
+- NONE	 = 0
+- LZMA	 = 1
+- LZ4	 = 2
+- LZ4HC	 = 3
+- LZHAM	 = 4
+
+Payload.Header.TmpBundleSize	 Int64
+Payload.Header.CompressedSize	 Int32
+Payload.Header.DecompressedSize	 Int32
+Payload.Header.Flags			 Int32
+
+Payload.CompressedInfo			 byte[Payload.Header.CompressedSize]
+		Payload.UnknownBytes	 byte[16]
+		Payload.BlocksCount		 Int32
+		Payload.BlocksInfos		 BlockInfo[Payload.BlocksCount]
+				DecompressedSize	UInt32
+				CompressedSize		UInt32
+				Flags				Int16
+		Payload.Blocks			 Block[Payload.BlocksCount]
+				Data				byte[Payload.BlocksInfos[].DecompressedSize]
+
+##########
+DataStream
+	EntryInfoCount		Int32
+	EntryInfos			EntryInfo[EntryInfoCount]
+		Offset		Int64
+		Size		Int64
+		CabFile			CabFile
+				Flags		Int32
+				Name		str00
+				Data		byte[EntryInfoSize] at Position = EntryInfoOffset
+
+			

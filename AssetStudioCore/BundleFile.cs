@@ -136,7 +136,7 @@ namespace AssetStudio
                 blocksInfoBytes = bundleReader.ReadBytes(compressedSize);
             }
             MemoryStream blocksInfoStream;
-            switch (flag & 0x3F)
+            switch (flag & 0b111111)
             {
                 default://None
                     {

@@ -1,8 +1,37 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AssetsBundle\BundleDecrypt.cs" />
+    <Compile Remove="AssetsBundle\Decryptor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="AssetsBundle\BundleDecrypt.cs" />
+    <None Include="AssetsBundle\Decryptor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AssetStudioCore\AssetStudio.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="scripts32.dec.bundle">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="scripts32.enc.bundle">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="scripts64.dec.bundle">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="scripts64.enc.bundle">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
