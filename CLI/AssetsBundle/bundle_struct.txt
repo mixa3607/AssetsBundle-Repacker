@@ -6,6 +6,10 @@ compression types
 - LZ4HC	 = 3
 - LZHAM	 = 4
 
+flag masks
+- 0b0000_0000_0000_0000_0000_0000_1000_0000	read at end of file
+- 0b0000_0000_0000_0000_0000_0000_0011_1111	compression type
+
 Header.Type				Str00
 Header.Format			Int32
 Header.EngineVer		Str00
@@ -23,12 +27,12 @@ Payload.CompressedInfo				byte[Payload.Header.CompressedSize]	Compressed in Payl
 				DecompressedSize	UInt32
 				CompressedSize		UInt32
 				Flags				Int16
+		EntryInfoCount				Int32
 		EntryInfos					EntryInfo[EntryInfoCount]
 				Offset				Int64
 				Size				Int64
 				CabFile.Flags		Int32
 				CabFile.Name		str00
-				CabFile.Data		byte[EntryInfoSize] at Position = EntryInfoOffset
 Payload.Blocks		Block[Payload.BlocksCount]		
 		Data		byte[Payload.BlocksInfos[].DecompressedSize] Compressed in Payload.BlocksInfos[].Flags format
 
@@ -41,45 +45,3 @@ DataStream
 		CabFile.Flags		Int32
 		CabFile.Name		str00
 		CabFile.Data		byte[EntryInfoSize] at Position = EntryInfoOffset
-
-			
-
-
-######## NOT VALID #############
-	HEADER
-str00	type name
-int32	format
-str00	engine version
-str00	player version
-
-	PAYLOAD
-int64	bundle size
-int32	compressed size
-int32	decompressed size
-int32	flags
-	0b0000_0000_0000_0000_0000_0000_1000_0000	read at end of file
-	0b0000_0000_0000_0000_0000_0000_0011_1111	compression type
-
-byte[compressed size]	compressed info block
-	- byte[16]	unknown (all is 00)
-	- int32		blocks count
-	- repeat [blocks count] times
-	  {
-		int32	decompressed size
-		int32	compressed size
-		int16	flags
-				0b0000_0000_0000_0000_0000_0000_0011_1111	compression type
-	   }
-	- repeat [blocks count] EACH COMPRESSED
-	  {
-		int64	entry info offset
-		int64	entry info size
-		int32	flags
-		str00	filename
-	   }
-
-repeat [blocks count] times{
-	byte[compressed size]	compressed data block
-}
-
-
