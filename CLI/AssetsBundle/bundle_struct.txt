@@ -1,4 +1,46 @@
-﻿	HEADER
+﻿
+compression types
+- NONE	 = 0
+- LZMA	 = 1
+- LZ4	 = 2
+- LZ4HC	 = 3
+- LZHAM	 = 4
+
+Header.Type				Str00
+Header.Format			Int32
+Header.EngineVer		Str00
+Header.PlayerVer		Str00
+
+Payload.Header.BundleSize		 Int64
+Payload.Header.CompressedSize	 Int32
+Payload.Header.DecompressedSize	 Int32
+Payload.Header.Flags			 Int32
+
+Payload.CompressedInfo			 byte[Payload.Header.CompressedSize]	Compressed in Payload.Header.Flags format
+		Payload.UnknownBytes	 byte[16]
+		Payload.BlocksCount		 Int32
+		Payload.BlocksInfos		 BlockInfo[Payload.BlocksCount]
+				DecompressedSize	UInt32
+				CompressedSize		UInt32
+				Flags				Int16
+Payload.Blocks			 Block[Payload.BlocksCount]		
+		Data				byte[Payload.BlocksInfos[].DecompressedSize] Compressed in Payload.BlocksInfos[].Flags format
+
+########## all decompressed Payload.Blocks in one stream
+DataStream
+	EntryInfoCount		Int32
+	EntryInfos			EntryInfo[EntryInfoCount]
+		Offset		Int64
+		Size		Int64
+		CabFile.Flags		Int32
+		CabFile.Name		str00
+		CabFile.Data		byte[EntryInfoSize] at Position = EntryInfoOffset
+
+			
+
+
+######## NOT VALID #############
+	HEADER
 str00	type name
 int32	format
 str00	engine version
@@ -22,8 +64,7 @@ byte[compressed size]	compressed info block
 		int16	flags
 				0b0000_0000_0000_0000_0000_0000_0011_1111	compression type
 	   }
-	- int32		entry info blocks count
-	- repeat [entry info blocks count]
+	- repeat [blocks count] EACH COMPRESSED
 	  {
 		int64	entry info offset
 		int64	entry info size
@@ -36,38 +77,3 @@ repeat [blocks count] times{
 }
 
 
-
-compression types
-- NONE	 = 0
-- LZMA	 = 1
-- LZ4	 = 2
-- LZ4HC	 = 3
-- LZHAM	 = 4
-
-Payload.Header.TmpBundleSize	 Int64
-Payload.Header.CompressedSize	 Int32
-Payload.Header.DecompressedSize	 Int32
-Payload.Header.Flags			 Int32
-
-Payload.CompressedInfo			 byte[Payload.Header.CompressedSize]
-		Payload.UnknownBytes	 byte[16]
-		Payload.BlocksCount		 Int32
-		Payload.BlocksInfos		 BlockInfo[Payload.BlocksCount]
-				DecompressedSize	UInt32
-				CompressedSize		UInt32
-				Flags				Int16
-		Payload.Blocks			 Block[Payload.BlocksCount]
-				Data				byte[Payload.BlocksInfos[].DecompressedSize]
-
-##########
-DataStream
-	EntryInfoCount		Int32
-	EntryInfos			EntryInfo[EntryInfoCount]
-		Offset		Int64
-		Size		Int64
-		CabFile			CabFile
-				Flags		Int32
-				Name		str00
-				Data		byte[EntryInfoSize] at Position = EntryInfoOffset
-
-			
