@@ -44,7 +44,7 @@ namespace CLI.AssetsBundle
         }
 
 
-        public static (byte[] info, int infoLen, byte[] blocks) BuildFormat6(UnityAssetsBundlePayload bundlePayload)
+        public static (byte[] info, int infoLen, byte[] data) BuildFormat6(UnityAssetsBundlePayload bundlePayload)
         {
 
             if (bundlePayload.Files.Length != bundlePayload.Blocks.Length)
@@ -53,59 +53,53 @@ namespace CLI.AssetsBundle
                 throw new NotImplementedException("Not support bundles with ReadAtEnd flag");
 
             //build compressed data (Payload.Blocks)
-            var blocksCompressedStream = new MemoryStream();
-            var blocksWriter = new EndianBinaryWriter(blocksCompressedStream);
-            blocksWriter.Write(bundlePayload.Files.Length);
-            var blockStart = (long)0;
-            var blocksInfos = new UnityAssetsBundleReader.BlockInfo[bundlePayload.Files.Length];
-            for (int i = 0; i < bundlePayload.Files.Length; i++)
+            int infoLen;
+            byte[] compressedInfoBytes;
+            //byte[] entriesInfosBytes;
+            byte[] compressedDataBytes;
+            //var blocksInfos = new UnityAssetsBundleReader.BlockInfo[bundlePayload.Files.Length];
+
+            using (var compressedDataStream = new MemoryStream())
             {
-                using var blockStream = new MemoryStream();
-                using var blockWriter = new EndianBinaryWriter(blockStream);
+                var blocksInfosStream = new MemoryStream();
+                var blocksInfosWriter = new EndianBinaryWriter(blocksInfosStream);
 
-                var file = bundlePayload.Files[i];
-                var nameBytes = Encoding.UTF8.GetBytes(file.Name);
-                //offset = pos + offset(8) + size(8) + flags(4) + name(X)
-                var offset = (long)(blockStart + 20 + nameBytes.Length + 1);
-                blockWriter.Write(offset);
-                blockWriter.Write(file.DataBytes.LongLength);   //decompressed size
-                blockWriter.Write(file.Flags);      //flags
-                blockWriter.Write(file.Name);       //name
-                blockWriter.Write(file.DataBytes);  //data
+                var entriesStream = new MemoryStream();
+                var entriesWriter = new EndianBinaryWriter(entriesStream);
 
-                blockStart += offset + file.DataBytes.Length;
+                blocksInfosWriter.Write(bundlePayload.UnknownBytes);
+                blocksInfosWriter.Write(bundlePayload.Blocks.Length);
+                entriesWriter.Write(bundlePayload.Files.Length);
 
-                var compressedBlock = Compress(blockStream.ToArray(), bundlePayload.Blocks[i].CompressionType);
-
-                //var dec = DecompressToMemoryStream(compressedBlock, ECompressionType.LzMa, (int) blockStream.Length);
-                blocksCompressedStream.Write(compressedBlock);
-
-                blocksInfos[i] = new UnityAssetsBundleReader.BlockInfo()
+                var entryOffset = (long) 0;
+                for (int i = 0; i < bundlePayload.Files.Length; i++)
                 {
-                    DecompressedSize = (uint)file.DataBytes.LongLength,
-                    CompressedSize = (uint)compressedBlock.LongLength,
-                    Flags = bundlePayload.Blocks[i].Flags
-                };
+                    var file = bundlePayload.Files[i];
+
+                    entriesWriter.Write(entryOffset);
+                    entriesWriter.Write((long)file.DataBytes.Length);
+                    entriesWriter.Write(file.Flags);
+                    entriesWriter.Write(file.Name);
+                    entryOffset += file.DataBytes.Length;
+
+                    var compressedEntry = Compress(file.DataBytes, bundlePayload.Blocks[i].CompressionType);
+                    compressedDataStream.Write(compressedEntry);
+
+                    blocksInfosWriter.Write((uint)file.DataBytes.LongLength);
+                    blocksInfosWriter.Write((uint)compressedEntry.LongLength);
+                    blocksInfosWriter.Write(bundlePayload.Blocks[i].Flags);
+                    
+                    
+                }
+
+                blocksInfosStream.Write(entriesStream.ToArray());
+                infoLen = (int) blocksInfosStream.Length;
+                compressedInfoBytes = Compress(blocksInfosStream.ToArray(), bundlePayload.PayloadCompressionType);
+                //entriesInfosBytes = entriesStream.ToArray();
+                compressedDataBytes = compressedDataStream.ToArray();
             }
 
-            var blocksInfosStream = new MemoryStream();
-            var blocksInfosWriter = new EndianBinaryWriter(blocksInfosStream);
-            blocksInfosWriter.Write(bundlePayload.UnknownBytes);
-            blocksInfosWriter.Write(bundlePayload.Blocks.Length);
-            foreach (var blockInfo in blocksInfos)
-            {
-                blocksInfosWriter.Write(blockInfo.DecompressedSize);
-                blocksInfosWriter.Write(blockInfo.CompressedSize);
-                blocksInfosWriter.Write(blockInfo.Flags);
-            }
-
-
-            var blocksInfosBytes = blocksInfosStream.ToArray();
-
-            var compressedBlocksInfosBytes = Compress(blocksInfosBytes, bundlePayload.PayloadCompressionType);
-
-
-            return (compressedBlocksInfosBytes, blocksInfosBytes.Length, blocksCompressedStream.ToArray());
+            return (compressedInfoBytes, infoLen, compressedDataBytes);
         }
 
 

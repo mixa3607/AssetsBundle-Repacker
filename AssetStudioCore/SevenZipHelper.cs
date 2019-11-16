@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using SevenZip;
 using SevenZip.Compression.LZMA;
 
@@ -46,10 +47,10 @@ namespace AssetStudio
             };
             var propValues = new System.Object[]
             {
-                (int)2048,
-                (int)2,
-                (int)3,
-                (int)0,
+                (int) (1 << 23), //(int)2048,
+                (int) 2,
+                (int) 3,
+                (int) 0,
                 true
             };
             var encoder = new Encoder();
@@ -96,6 +97,13 @@ namespace AssetStudio
                 inStream.Read(properties, 0, 5);
                 compressedSize -= 5;
             }
+            //parse props for debug
+            var dict = BitConverter.ToInt32(properties.Skip(1).ToArray());
+            var prop = properties[0];
+            var pb = (byte)(prop / (9 * 5));
+            prop -= (byte)(pb * 9 * 5);
+            var lp = prop / 9;
+            var lc = prop - lp * 9;
             decoder.SetDecoderProperties(properties);
             decoder.Code(inStream, outStream, compressedSize, decompressedSize, progressCallback);
         }

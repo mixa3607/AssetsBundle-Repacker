@@ -107,6 +107,7 @@ namespace CLI.AssetsBundle
                     compressedBytes, 
                     blockInfo.CompressionType,
                     (int)blockInfo.DecompressedSize);
+                decompressedMemStream.Position = 0;
                 decompressedMemStream.CopyTo(dataStream, blockInfo.DecompressedSize);
             }
             dataStream.Position = 0; //reset

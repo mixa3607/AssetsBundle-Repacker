@@ -13,23 +13,21 @@ namespace CLI
     {
         static void Main(string[] args)
         {
-            //var data = new byte[] {100, 100, 20, 50, 44};
-            //var compressed = UnityAssetsBundleReader.Compress(data, ECompressionType.Lz4);
-            //
-            //var decompStream = UnityAssetsBundleReader.DecompressToMemoryStream(compressed, ECompressionType.Lz4, data.Length);
-            //var decData = decompStream.ToArray();
 
-            var scriptsBytes = File.ReadAllBytes("scripts32.dec.bundle"); //Decryptor.DecryptScriptsBundle("scripts32");
-            //var bundleFile = new BundleFile(new EndianBinaryReader(new MemoryStream(scriptsBytes)), "tmp");
-            var bundle = UnityAssetsBundleReader.ReadBundle(scriptsBytes);
+            var bundleOrigBytes = File.ReadAllBytes("scripts32.dec.bundle"); 
+            var bundleOrig = UnityAssetsBundleReader.ReadBundle(bundleOrigBytes);
 
-            //var b2 = UnityAssetsBundleReader.
+            var bundleRepackBytes = UnityAssetsBundleWriter.WriteBundle(bundleOrig);
+            var bundleRepack = UnityAssetsBundleReader.ReadBundle(bundleRepackBytes);
 
-
-            var bytes = UnityAssetsBundleWriter.WriteBundle(bundle);
-
-            var bundle2 = UnityAssetsBundleReader.ReadBundle(bytes);
-            //var assetsFile = new AssetsFile(inputPath, new EndianBinaryReader(bundleFile.fileList[0].stream));
+            //comparison test
+            //for (int i = 0; i < bundleRepack.Payload.Files[0].DataBytes.Length; i++)
+            //{
+            //    if (bundleRepack.Payload.Files[0].DataBytes[i] != bundleOrig.Payload.Files[0].DataBytes[i])
+            //    {
+            //        throw new Exception();
+            //    }
+            //}
         }
     }
 
