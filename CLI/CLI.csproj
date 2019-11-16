@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="K4os.Compression.LZ4" Version="1.1.11" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AssetStudioCore\AssetStudio.csproj" />
   </ItemGroup>
 

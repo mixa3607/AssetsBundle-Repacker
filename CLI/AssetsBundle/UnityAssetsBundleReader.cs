@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using AssetStudio;
+using K4os.Compression.LZ4;
 using Lz4;
 
 namespace CLI
@@ -72,15 +73,34 @@ namespace CLI
             return bundle;
         }
 
-        private static void Compress(byte[] data, ECompressionType compressType, int start = 0, int count = 0)
+        public static byte[] Compress(byte[] data, ECompressionType compressType) //, int start = 0, int count = 0)
         {
-            //switch (compressType)
-            //{
-            //    case ECompressionType.LzMa: 
-            //}
+            byte[] compressedData;
+            switch (compressType)
+            {
+                case ECompressionType.LzMa: 
+                    compressedData = SevenZipHelper.CompressData(data); 
+                    break;
+                case ECompressionType.Lz4:   //LZ4
+                case ECompressionType.Lz4Hc: //LZ4HC
+                    compressedData = new byte[LZ4Codec.MaximumOutputSize(data.Length)];
+                    var compressedSize = LZ4Codec.Encode(data, 0, data.Length, 
+                        compressedData, 0, compressedData.Length);
+                    Array.Resize(ref compressedData, compressedSize);
+                    break;
+                //case CompressionType.LzHam:   //LZHAM
+                case ECompressionType.None:      //None
+                default:
+                {
+                    compressedData = data;
+                    break;
+                }
+            }
+
+            return compressedData;
         }
 
-        private static MemoryStream DecompressToMemoryStream(byte[] compressedBytes, ECompressionType compressType, int decompressedSize = -1)
+        public static MemoryStream DecompressToMemoryStream(byte[] compressedBytes, ECompressionType compressType, int decompressedSize = -1)
         {
             MemoryStream decompressedStream;
             switch (compressType)
@@ -106,10 +126,12 @@ namespace CLI
                 case ECompressionType.Lz4Hc: //LZ4HC
                 {
                     var decompressedBytes = new byte[decompressedSize];
-                    using (var decoder = new Lz4DecoderStream(new MemoryStream(compressedBytes)))
-                    {
-                        decoder.Read(decompressedBytes, 0, decompressedSize);
-                    }
+                    LZ4Codec.Decode(compressedBytes, 0, compressedBytes.Length,
+                        decompressedBytes, 0, decompressedSize);
+                    //using (var decoder = new Lz4DecoderStream(new MemoryStream(compressedBytes)))
+                    //{
+                    //    decoder.Read(decompressedBytes, 0, decompressedSize);
+                    //}
                     decompressedStream = new MemoryStream(decompressedBytes);
                     break;
                 }
