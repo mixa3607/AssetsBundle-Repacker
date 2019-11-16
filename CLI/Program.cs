@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AssetStudio;
+using CLI.AssetsBundle;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -21,6 +22,13 @@ namespace CLI
             var scriptsBytes = File.ReadAllBytes("scripts32.dec.bundle"); //Decryptor.DecryptScriptsBundle("scripts32");
             //var bundleFile = new BundleFile(new EndianBinaryReader(new MemoryStream(scriptsBytes)), "tmp");
             var bundle = UnityAssetsBundleReader.ReadBundle(scriptsBytes);
+
+            //var b2 = UnityAssetsBundleReader.
+
+
+            var bytes = UnityAssetsBundleWriter.WriteBundle(bundle);
+
+            var bundle2 = UnityAssetsBundleReader.ReadBundle(bytes);
             //var assetsFile = new AssetsFile(inputPath, new EndianBinaryReader(bundleFile.fileList[0].stream));
         }
     }

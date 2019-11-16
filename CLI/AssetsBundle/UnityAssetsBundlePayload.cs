@@ -18,7 +18,6 @@ namespace CLI
 
 
         public byte[] UnknownBytes { get; set; }
-        //public int TmpBlocksCount;
 
         public UnityAssetsBundlePayloadBlock[] Blocks { get; set; }
         public UnityAssetsBundleStreamFile[] Files { get; set; }
@@ -38,7 +37,7 @@ namespace CLI
     {
         //public uint TmpCompressedSize; // { get; private set; }
         //public uint TmpDecompressedSize; // { get; private set; }
-        public int Flags { get; set; }
+        public short Flags { get; set; }
         public ECompressionType CompressionType => (ECompressionType)(Flags & 0b0000_0000_0000_0000_0000_0000_0011_1111);
 
         //public byte[] DataBytes { get; set; }
