@@ -11,22 +11,28 @@ Header.Format			Int32
 Header.EngineVer		Str00
 Header.PlayerVer		Str00
 
-Payload.Header.BundleSize		 Int64
-Payload.Header.CompressedSize	 Int32
-Payload.Header.DecompressedSize	 Int32
-Payload.Header.Flags			 Int32
+Payload.Header.BundleSize			Int64
+Payload.Header.CompressedSize		Int32
+Payload.Header.DecompressedSize		Int32
+Payload.Header.Flags				Int32
 
-Payload.CompressedInfo			 byte[Payload.Header.CompressedSize]	Compressed in Payload.Header.Flags format
-		Payload.UnknownBytes	 byte[16]
-		Payload.BlocksCount		 Int32
-		Payload.BlocksInfos		 BlockInfo[Payload.BlocksCount]
+Payload.CompressedInfo				byte[Payload.Header.CompressedSize]	Compressed in Payload.Header.Flags format
+		Payload.UnknownBytes		byte[16]
+		Payload.BlocksCount			Int32
+		Payload.BlocksInfos			BlockInfo[Payload.BlocksCount]
 				DecompressedSize	UInt32
 				CompressedSize		UInt32
 				Flags				Int16
-Payload.Blocks			 Block[Payload.BlocksCount]		
-		Data				byte[Payload.BlocksInfos[].DecompressedSize] Compressed in Payload.BlocksInfos[].Flags format
+		EntryInfos					EntryInfo[EntryInfoCount]
+				Offset				Int64
+				Size				Int64
+				CabFile.Flags		Int32
+				CabFile.Name		str00
+				CabFile.Data		byte[EntryInfoSize] at Position = EntryInfoOffset
+Payload.Blocks		Block[Payload.BlocksCount]		
+		Data		byte[Payload.BlocksInfos[].DecompressedSize] Compressed in Payload.BlocksInfos[].Flags format
 
-########## all decompressed Payload.Blocks in one stream
+########## represent all decompressed Payload.Blocks in one stream
 DataStream
 	EntryInfoCount		Int32
 	EntryInfos			EntryInfo[EntryInfoCount]
